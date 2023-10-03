@@ -235,13 +235,13 @@
                                     $spcil_name=$spcil_array["sname"];
                                     echo '<tr>
                                         <td> &nbsp;'.
-                                        substr($name,0,30)
+                                        htmlspecialchars(substr($name, 0, 30))
                                         .'</td>
                                         <td>
-                                        '.substr($email,0,20).'
+                                        '.htmlspecialchars(substr($email, 0, 20)).'
                                         </td>
                                         <td>
-                                            '.substr($spcil_name,0,20).'
+                                            '.htmlspecialchars(substr($spcil_name, 0, 20)).'
                                         </td>
 
                                         <td>
