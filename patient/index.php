@@ -159,7 +159,7 @@
                     <tr>
                         <td >
                             <h3>Welcome!</h3>
-                            <h1><?php echo $username  ?>.</h1>
+                            <h1><?php echo htmlspecialchars($username, ENT_QUOTES, 'UTF-8'); ?></h1>
                             <p>Haven't any idea about doctors? no problem let's jumping to 
                                 <a href="doctors.php" class="non-style-link"><b>"All Doctors"</b></a> section or 
                                 <a href="schedule.php" class="non-style-link"><b>"Sessions"</b> </a><br>

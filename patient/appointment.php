@@ -21,60 +21,61 @@
 <body>
     <?php
 
-    //learn from w3schools.com
-
     session_start();
 
-    if(isset($_SESSION["user"])){
-        if(($_SESSION["user"])=="" or $_SESSION['usertype']!='p'){
+    if (isset($_SESSION["user"])) {
+        if (($_SESSION["user"]) == "" or $_SESSION['usertype'] != 'p') {
             header("location: ../login.php");
-        }else{
-            $useremail=$_SESSION["user"];
+            exit(); // Add exit to prevent further execution
+        } else {
+            $useremail = $_SESSION["user"];
         }
-
-    }else{
+    } else {
         header("location: ../login.php");
+        exit(); // Add exit to prevent further execution
     }
     
-
     //import database
+
     include("../connection.php");
-    $sqlmain= "select * from patient where pemail=?";
+    $sqlmain = "SELECT * FROM patient WHERE pemail=?";
     $stmt = $database->prepare($sqlmain);
-    $stmt->bind_param("s",$useremail);
+    $stmt->bind_param("s", $useremail);
     $stmt->execute();
     $userrow = $stmt->get_result();
-    $userfetch=$userrow->fetch_assoc();
-    $userid= $userfetch["pid"];
-    $username=$userfetch["pname"];
-
-
-    //echo $userid;
-    //echo $username;
-
-
-    //TODO
-    $sqlmain= "select appointment.appoid,schedule.scheduleid,schedule.title,doctor.docname,patient.pname,schedule.scheduledate,schedule.scheduletime,appointment.apponum,appointment.appodate from schedule inner join appointment on schedule.scheduleid=appointment.scheduleid inner join patient on patient.pid=appointment.pid inner join doctor on schedule.docid=doctor.docid  where  patient.pid=$userid ";
-
-    if($_POST){
-        //print_r($_POST);
-        
-
-
-        
-        if(!empty($_POST["sheduledate"])){
-            $sheduledate=$_POST["sheduledate"];
-            $sqlmain.=" and schedule.scheduledate='$sheduledate' ";
-        };
-
+    $userfetch = $userrow->fetch_assoc();
+    $userid = $userfetch["pid"];
+    $username = $userfetch["pname"];
     
-
-        //echo $sqlmain;
-
+    $sqlmain = "SELECT appointment.appoid, schedule.scheduleid, schedule.title, doctor.docname, patient.pname, 
+                schedule.scheduledate, schedule.scheduletime, appointment.apponum, appointment.appodate 
+                FROM schedule INNER JOIN appointment ON schedule.scheduleid = appointment.scheduleid INNER JOIN patient ON patient.pid = appointment.pid INNER JOIN doctor ON schedule.docid = doctor.docid WHERE patient.pid = $userid";
+    
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
+        $sheduledate = isset($_POST["sheduledate"]) ? $_POST["sheduledate"] : "";
+    
+        if (!empty($sheduledate) && !isValidDate($sheduledate)) {
+            echo "Invalid date format. Please enter a valid date.";
+        } else {
+            if (!empty($sheduledate)) {
+                $sqlmain .= " AND schedule.scheduledate = ?";
+            }
+        }
     }
-
-    $sqlmain.="order by appointment.appodate  asc";
-    $result= $database->query($sqlmain);
+    
+    $sqlmain .= " ORDER BY appointment.appodate ASC";
+    $stmt = $database->prepare($sqlmain);
+    
+    if (!empty($sheduledate)) {
+        $stmt->bind_param("s", $sheduledate);
+    }
+    
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    function isValidDate($date) {
+        return (bool) preg_match("/^\d{4}-\d{2}-\d{2}$/", $date);
+    }
     ?>
     <div class="container">
         <div class="menu">
@@ -142,16 +143,14 @@
                         <p style="font-size: 14px;color: rgb(119, 119, 119);padding: 0;margin: 0;text-align: right;">
                             Today's Date
                         </p>
-                        <p class="heading-sub12" style="padding: 0;margin: 0;">
+                        <p class="heading-sub12" style="padding: 0; margin: 0;">
+
                             <?php 
-
-                        date_default_timezone_set('Asia/Kolkata');
-
-                        $today = date('Y-m-d');
-                        echo $today;
-
-                        
-                        ?>
+                            date_default_timezone_set('Asia/Kolkata');
+                            $today = date('Y-m-d');
+                            echo htmlspecialchars($today, ENT_QUOTES, 'UTF-8');
+                            ?>
+                            
                         </p>
                     </td>
                     <td width="10%">
